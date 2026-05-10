@@ -1,0 +1,45 @@
+name: Build App
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # 可以手动触发构建
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      
+      - name: Build Android APK
+        id: android_build
+        run: |
+          npx eas build --platform android --profile preview --non-interactive --output build-output.json
+          echo "APK_URL=$(cat build-output.json | jq -r .artifacts[0].url)" >> $GITHUB_ENV
+      
+      - name: Build iOS IPA
+        id: ios_build
+        run: |
+          npx eas build --platform ios --profile production --non-interactive --output ios-build-output.json
+          echo "IPA_URL=$(cat ios-build-output.json | jq -r .artifacts[0].url)" >> $GITHUB_ENV
+      
+      - name: Show download links
+        run: |
+          echo "🎉 Build completed successfully!"
+          echo "📱 Android APK: ${{ env.APK_URL }}"
+          echo "🍎 iOS IPA: ${{ env.IPA_URL }}"
