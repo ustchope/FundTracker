@@ -33,12 +33,42 @@ jobs:
         run: npx expo prebuild --platform android --clean
       
       - name: Build Android APK
-        run: eas build --platform android --profile preview --non-interactive --no-wait
+        id: android-build
+        run: |
+          eas build --platform android --profile preview --non-interactive 2>&1 | tee /tmp/eas_output.txt
+          echo "build_id=$(cat /tmp/eas_output.txt | grep -oP 'https://expo.dev/accounts/[^/]+/projects/[^/]+/builds/\K[a-f0-9-]+' | head -1)" >> $GITHUB_OUTPUT
+      
+      - name: Wait for Android build to complete
+        if: steps.android-build.outputs.build_id != ''
+        run: |
+          build_id="${{ steps.android-build.outputs.build_id }}"
+          echo "Waiting for build $build_id to complete..."
+          for i in {1..60}; do
+            status=$(eas build:view $build_id --json 2>/dev/null | grep -oP '"status":"\K[^"]+' | head -1)
+            echo "Build status: $status"
+            if [ "$status" == "finished" ]; then
+              echo "Build completed successfully!"
+              eas build:view $build_id --json | grep -oP '"artifactUrl":"\K[^"]+' | head -1
+              exit 0
+            elif [ "$status" == "errored" ]; then
+              echo "Build failed!"
+              eas build:view $build_id --json
+              exit 1
+            fi
+            sleep 30
+          done
+          echo "Build timed out"
+          exit 1
+      
+      - name: Show Android build result
+        run: |
+          build_id="${{ steps.android-build.outputs.build_id }}"
+          if [ -n "$build_id" ]; then
+            echo "📱 Android Build ID: $build_id"
+            echo "🔗 View build at: https://expo.dev/accounts/ustchope/projects/FundTracker/builds/$build_id"
+          fi
       
       - name: Build iOS
-        run: eas build --platform ios --profile production --non-interactive --no-wait
-      
-      - name: Show build links
         run: |
-          echo "✅ Build jobs submitted!"
-          echo "📱 Monitor builds at: https://expo.dev/accounts/ustchope/projects/FundTracker/builds"
+          echo "iOS build skipped - requires Apple Developer account"
+          echo "To build iOS, add Apple credentials to EAS secrets"
