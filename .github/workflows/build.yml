@@ -10,36 +10,56 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Install EAS CLI
         run: npm install -g eas-cli
-      
+
       - name: Setup Expo
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
-      
+
       - name: Generate native Android code
         run: npx expo prebuild --platform android --clean
-      
-      - name: Configure mirror
+
+      - name: Build Android APK (Development)
+        id: build
         run: |
-          sed -i 's|https://services.gradle.org|https://mirrors.cloud.tencent.com/gradle|g' android/gradle/wrapper/gradle-wrapper.properties
-      
-      - name: Build Android APK
-        run: eas build --platform android --profile preview --non-interactive --no-wait
-      
-      - name: Show build info
+          echo "Starting EAS build..."
+          eas build --platform android --profile development --non-interactive --no-wait
+
+      - name: Check build status
         run: |
-          echo "✅ Build job submitted!"
-          echo "📱 Monitor at: https://expo.dev/accounts/ustchope/projects/FundTracker/builds"
+          echo "Build job submitted!"
+          echo "Monitor at: https://expo.dev/accounts/ustchope/projects/FundTracker/builds"
+
+  get-logs:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for build
+        run: sleep 120
+
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
+
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Get build logs
+        run: |
+          echo "Fetching build status..."
+          eas build:list --platform android --limit 1
