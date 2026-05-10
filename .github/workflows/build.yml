@@ -38,18 +38,20 @@ jobs:
           echo "Starting EAS build..."
           eas build --platform android --profile preview --non-interactive --no-wait
 
-      - name: Verify EAS project configuration
+      - name: Wait for build to complete
         run: |
-          echo "Checking EAS configuration..."
-          eas build:list --platform android --limit 1 || echo "Could not list builds"
+          echo "Waiting for EAS build to complete..."
+          sleep 180
+
+      - name: Check build status
+        run: |
+          eas build:list --platform android --limit 1
 
       - name: Show build info
         run: |
           echo ""
           echo "========================================"
-          echo "✅ EAS Build job submitted successfully!"
-          echo "📱 Monitor your build at:"
+          echo "✅ Build process completed!"
+          echo "📱 Check your build at:"
           echo "   https://expo.dev/accounts/ustchope/projects/FundTracker/builds"
-          echo ""
-          echo "Your APK will be available for download once the build completes."
           echo "========================================"
