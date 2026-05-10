@@ -29,17 +29,16 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
       
-      - name: Initialize EAS project
-        run: |
-          yes | eas init --project-url "https://github.com/ustchope/FundTracker" || true
+      - name: Generate native Android code
+        run: npx expo prebuild --platform android --clean
       
       - name: Build Android APK
-        run: eas build --platform android --profile preview --non-interactive
+        run: eas build --platform android --profile preview --non-interactive --no-wait
       
       - name: Build iOS
-        run: eas build --platform ios --profile production --non-interactive
+        run: eas build --platform ios --profile production --non-interactive --no-wait
       
-      - name: Show download links
+      - name: Show build links
         run: |
-          echo "✅ Build completed!"
-          echo "📱 Visit https://expo.dev to download your apps"
+          echo "✅ Build jobs submitted!"
+          echo "📱 Monitor builds at: https://expo.dev/accounts/ustchope/projects/FundTracker/builds"
