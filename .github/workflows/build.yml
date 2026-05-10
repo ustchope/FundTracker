@@ -23,14 +23,15 @@ jobs:
       - name: Install EAS CLI
         run: npm install -g eas-cli
       
-      - name: Login to Expo
+      - name: Setup Expo
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
       
-      - name: Configure EAS
-        run: eas configure --platform android --non-interactive || true
+      - name: Initialize EAS project
+        run: |
+          yes | eas init --project-url "https://github.com/ustchope/FundTracker" || true
       
       - name: Build Android APK
         run: eas build --platform android --profile preview --non-interactive
