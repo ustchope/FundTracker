@@ -12,9 +12,6 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.fundtracker.app"
@@ -26,19 +23,23 @@
       },
       "package": "com.fundtracker.app"
     },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
     "plugins": [
+      "expo-font",
       [
         "expo-image-picker",
         {
-          "photosPermission": "The app accesses your photos to let you import fund screenshots."
+          "photosPermission": "Allow FundTracker to access your photos to import fund screenshots."
         }
       ]
     ],
+    "owner": "ustchope",
     "extra": {
       "eas": {
         "projectId": "9bbdc598-5469-44ea-b1cf-b83cc9c36745"
       }
-    },
-    "owner": "ustchope"
+    }
   }
 }
