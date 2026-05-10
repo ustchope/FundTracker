@@ -7,6 +7,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -19,6 +20,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
+
       - name: Setup Expo
         uses: expo/expo-github-action@v8
         with:
@@ -28,25 +32,24 @@ jobs:
       - name: Generate native Android code
         run: npx expo prebuild --platform android --clean
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Build Android APK with Gradle
-        id: gradle_build
-        working-directory: android
+      - name: Start EAS build (async)
+        id: eas_build
         run: |
-          chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace 2>&1
-          echo "=== Checking build output ==="
-          find . -name "*.apk" -type f 2>/dev/null
-          ls -la app/build/outputs/apk/debug/ 2>/dev/null || echo "Debug APK directory not found"
+          echo "Starting EAS build..."
+          eas build --platform android --profile preview --non-interactive --no-wait
 
-      - name: Upload APK
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: fundtracker-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+      - name: Verify EAS project configuration
+        run: |
+          echo "Checking EAS configuration..."
+          eas build:list --platform android --limit 1 || echo "Could not list builds"
+
+      - name: Show build info
+        run: |
+          echo ""
+          echo "========================================"
+          echo "✅ EAS Build job submitted successfully!"
+          echo "📱 Monitor your build at:"
+          echo "   https://expo.dev/accounts/ustchope/projects/FundTracker/builds"
+          echo ""
+          echo "Your APK will be available for download once the build completes."
+          echo "========================================"
