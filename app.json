@@ -23,9 +23,10 @@
       },
       "package": "com.fundtracker.app",
       "permissions": [
-        "CAMERA",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "web": {
@@ -39,6 +40,12 @@
           "cameraPermission": "Allow FundTracker to use the camera to capture fund screenshots."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "9bbdc598-5469-44ea-b1cf-b83cc9c36745"
+      }
+    },
+    "owner": "ustchope"
   }
 }
