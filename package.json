@@ -1,7 +1,7 @@
 {
   "name": "fundtracker",
   "version": "1.0.0",
-  "main": "index.ts",
+  "main": "./App.tsx",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
