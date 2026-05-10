@@ -9,8 +9,7 @@
     },
     "preview": {
       "android": {
-        "buildType": "apk",
-        "gradleArgs": ["-Pmirrors", "-Dorg.gradle.jvmargs=-Xmx4096m"]
+        "buildType": "apk"
       },
       "distribution": "internal"
     },
