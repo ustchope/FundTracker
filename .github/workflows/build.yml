@@ -2,7 +2,7 @@ name: Build App
 on:
   push:
     branches: [main]
-  workflow_dispatch: # 可以手动触发构建
+  workflow_dispatch:
 
 jobs:
   build:
@@ -20,26 +20,25 @@ jobs:
       - name: Install dependencies
         run: npm ci
       
-      - name: Setup EAS
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
+      
+      - name: Login to Expo
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
       
-      - name: Build Android APK
-        id: android_build
-        run: |
-          npx eas build --platform android --profile preview --non-interactive --output build-output.json
-          echo "APK_URL=$(cat build-output.json | jq -r .artifacts[0].url)" >> $GITHUB_ENV
+      - name: Configure EAS
+        run: eas configure --platform android --non-interactive || true
       
-      - name: Build iOS IPA
-        id: ios_build
-        run: |
-          npx eas build --platform ios --profile production --non-interactive --output ios-build-output.json
-          echo "IPA_URL=$(cat ios-build-output.json | jq -r .artifacts[0].url)" >> $GITHUB_ENV
+      - name: Build Android APK
+        run: eas build --platform android --profile preview --non-interactive
+      
+      - name: Build iOS
+        run: eas build --platform ios --profile production --non-interactive
       
       - name: Show download links
         run: |
-          echo "🎉 Build completed successfully!"
-          echo "📱 Android APK: ${{ env.APK_URL }}"
-          echo "🍎 iOS IPA: ${{ env.IPA_URL }}"
+          echo "✅ Build completed!"
+          echo "📱 Visit https://expo.dev to download your apps"
