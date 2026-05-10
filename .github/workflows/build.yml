@@ -19,9 +19,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install EAS CLI
-        run: npm install -g eas-cli
-
       - name: Setup Expo
         uses: expo/expo-github-action@v8
         with:
@@ -31,10 +28,26 @@ jobs:
       - name: Generate native Android code
         run: npx expo prebuild --platform android --clean
 
-      - name: Build Android APK
-        run: eas build --platform android --profile preview --non-interactive --no-wait
-
-      - name: Show build info
+      - name: Build Android APK with Gradle
+        id: gradle_build
         run: |
-          echo "✅ Build job submitted!"
-          echo "📱 Monitor at: https://expo.dev/accounts/ustchope/projects/FundTracker/builds"
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tee build.log
+          echo "BUILD_LOG=$(cat build.log | tail -100)" >> $GITHUB_ENV
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Show build log excerpt
+        if: failure()
+        run: |
+          echo "=== Last 50 lines of build log ==="
+          tail -50 android/app/build/outputs/logs/manifest-merger-debug-report.txt 2>/dev/null || echo "No log file found"
+          echo ""
+          echo "=== Gradle errors ==="
+          grep -A5 -i "error\|fail\|exception" android/app/build/outputs/logs/*.txt 2>/dev/null || echo "No error details found"
